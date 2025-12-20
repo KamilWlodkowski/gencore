@@ -5,6 +5,7 @@ from supabase import create_client, Client
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
+#testSS
 # Inicjalizacja klienta Supabase
 @st.cache_resource
 def init_supabase() -> Client:
