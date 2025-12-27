@@ -1,52 +1,15 @@
 import streamlit as st
-import requests
-import pandas as pd
+from settings import PAGE_CONFIG, APP_TITLE
+from database import fetch_all_eurojackpot_results
 
-# Konfiguracja Supabase
-SUPABASE_URL = st.secrets["SUPABASE_URL"]
-SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+st.set_page_config(**PAGE_CONFIG)
 
-def get_eurojackpot_data():
-    try:
-        url = f"{SUPABASE_URL}/rest/v1/eurojackpot"
-        headers = {
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}"
-        }
-        
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        return response.json()
-    except Exception as e:
-        st.error(f"Błąd podczas pobierania danych: {e}")
-        return None
+st.title(f"{APP_TITLE}")
 
-# Główna aplikacja
-def main():
-    st.title("EJ")
-    
-    # Sidebar z opcjami
-    st.sidebar.header("Gry")
-    action = st.sidebar.radio("Wybierz akcję:", ["EJ", "MM"])
-    
-    if action == "EJ":
-        # Pobierz dane
-        with st.spinner("Ładowanie danych..."):
-            data = get_eurojackpot_data()
-        
-        if data:
-            st.success(f"✅ Pobrano {len(data)} rekordów")
-            
-            # Konwersja do DataFrame dla lepszego wyświetlania
-            df = pd.DataFrame(data)
-            # Wyświetl dane
-            st.subheader("Dane z tabeli")
-            st.dataframe(df, use_container_width=True)
-        else:
-            st.warning("Brak danych do wyświetlenia")
-    elif action == "MM":
-        st.subheader("Dane z MM")
-    
-   
-if __name__ == "__main__":
-    main()
+draws = fetch_all_eurojackpot_results()
+
+if draws:
+    st.write(f"Tabela z {len(draws)} wynikami")
+    st.dataframe(draws)
+else:
+    st.info("Nie znalezionow danych w tabeli Eurojackpot")

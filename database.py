@@ -16,6 +16,25 @@ def get_supabase_client() -> Client:
             raise
     return _supabase_client
 
+# --------------------- EJ ---------------------
+def fetch_all_eurojackpot_results() -> list[dict]:
+    """
+    Fetches all Eurojackpot draw results from the 'eurojackpot' table.
+    Returns a list of dictionaries (each dict represents one row).
+    """
+    client = get_supabase_client()
+    
+    try:
+        response = client.table("eurojackpot").select("*").execute()
+        return response.data or []
+    except Exception as e:
+        print(f"❌ Error fetching Eurojackpot results: {e}")
+        raise
+
+# --------------------- MM ---------------------
+
+# --------------------- ML ---------------------
+
 # Test
 if __name__ == "__main__":
     client = get_supabase_client()
