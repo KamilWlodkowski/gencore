@@ -48,7 +48,7 @@ def scrape_latest_eurojackpot(last_date_str: Optional[str] = None) -> List[Dict]
                 if not nr_elem or not date_elem:
                     continue
 
-                nr_losowania = nr_elem.get_text(strip=True).replace('.', '').strip()
+                nr_losowania = int(nr_elem.get_text(strip=True).replace('.', '').strip())
                 data_str = date_elem.get_text(strip=True)
 
                 current_date_obj = datetime.strptime(data_str, '%d-%m-%Y').date()
@@ -107,7 +107,7 @@ def scrape_latest_mini_lotto(last_date_str: Optional[str] = None) -> List[Dict]:
                 if not nr_elem or not date_elem:
                     continue
 
-                nr_losowania = nr_elem.get_text(strip=True).replace('.', '').strip()
+                nr_losowania = int(nr_elem.get_text(strip=True).replace('.', '').strip())
                 data_str = date_elem.get_text(strip=True)
 
                 current_date_obj = datetime.strptime(data_str, '%d-%m-%Y').date()
@@ -159,7 +159,7 @@ def scrape_latest_multi_multi(last_date_str: Optional[str] = None) -> List[Dict]
                 if not nr_elem or not date_elem:
                     continue
 
-                nr_losowania = nr_elem.get_text(strip=True).replace('.', '').strip()
+                nr_losowania = int(nr_elem.get_text(strip=True).replace('.', '').strip())
                 data_str = date_elem.get_text(strip=True)
 
                 current_date_obj = datetime.strptime(data_str, '%d-%m-%Y').date()

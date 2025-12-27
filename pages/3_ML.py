@@ -1,9 +1,9 @@
 import streamlit as st
-from database import fetch_all_multi_multi_results
+from database import fetch_all_mini_lotto_results
 
-st.title("MM")
+st.title("ML")
 
-draws = fetch_all_multi_multi_results()
+draws = fetch_all_mini_lotto_results()
 
 if draws:
     rows_to_show = st.slider(
@@ -18,4 +18,4 @@ if draws:
     st.dataframe(display_data, use_container_width=True)
 
 else:
-    st.info("Nie znalezionow danych w tabeli Multi Multi")
+    st.info("Nie znalezionow danych w tabeli Mni lotto")

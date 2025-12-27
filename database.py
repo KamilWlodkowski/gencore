@@ -41,7 +41,7 @@ def fetch_all_eurojackpot_results() -> list[dict]:
         raise
 
 # --------------------- MM ---------------------
-def fetch_all_multimulti_results() -> list[dict]:
+def fetch_all_multi_multi_results() -> list[dict]:
     """
     Fetches all Multi Multi draw results from the 'multi_multi' table.
     Returns a list of dictionaries (each dict represents one row).
@@ -55,8 +55,20 @@ def fetch_all_multimulti_results() -> list[dict]:
         print(f"❌ Error fetching Multi Multi results: {e}")
         raise
 
-
 # --------------------- ML ---------------------
+def fetch_all_mini_lotto_results() -> list[dict]:
+    """
+    Fetches all mini lotto draw results from the 'mini_lotto' table.
+    Returns a list of dictionaries (each dict represents one row).
+    """
+    client = get_supabase_client()
+    
+    try:
+        response = client.table("mini_lotto").select("*").order("data", desc=True).execute()
+        return response.data or []
+    except Exception as e:
+        print(f"❌ Error fetching Eurojackpot results: {e}")
+        raise
 
 # ========================================
 # FUNKCJE SCRAPOWANIA I AKTUALIZACJI
