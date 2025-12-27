@@ -25,7 +25,7 @@ def fetch_all_eurojackpot_results() -> list[dict]:
     client = get_supabase_client()
     
     try:
-        response = client.table("eurojackpot").select("*").execute()
+        response = client.table("eurojackpot").select("*").order("data", desc=True).execute()
         return response.data or []
     except Exception as e:
         print(f"❌ Error fetching Eurojackpot results: {e}")
