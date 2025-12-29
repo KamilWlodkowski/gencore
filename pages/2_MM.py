@@ -10,7 +10,7 @@ if draws:
     "Liczba wyświetlanych wierszy",
     min_value=5,
     max_value=len(draws),
-    value=min(50, len(draws)),  
+    value=min(10, len(draws)),  
     step=5
 )
     st.write(f"Wyświetlam {rows_to_show} z {len(draws)} losowań")
