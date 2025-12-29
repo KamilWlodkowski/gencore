@@ -84,53 +84,69 @@ def scrape_latest_mini_lotto(last_date_str: Optional[str] = None) -> List[Dict]:
     """Scrapuje najnowsze losowania Mini Lotto."""
     current_year = datetime.now().year
     url = f"https://megalotto.pl/wyniki/mini-lotto/losowania-z-roku-{current_year}"
-
     try:
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                          '(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
+        }
         response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
-
         soup = BeautifulSoup(response.content, 'html.parser')
+        
         lista_losowan = soup.find('div', class_='lista_ostatnich_losowan')
         if not lista_losowan:
             return []
-
+        
         uls = lista_losowan.find_all('ul')
         new_draws = []
-
         last_date_obj = datetime.strptime(last_date_str, '%d-%m-%Y').date() if last_date_str else None
-
+        
         for ul in uls:
             try:
                 nr_elem = ul.find('li', class_='nr_in_list')
                 date_elem = ul.find('li', class_='date_in_list')
                 if not nr_elem or not date_elem:
                     continue
-
-                nr_losowania = int(nr_elem.get_text(strip=True).replace('.', '').strip())
+                
+                # Pobierz numer losowania
+                nr_text = nr_elem.get_text(strip=True).replace('.', '').strip()
+                if not nr_text.isdigit():
+                    continue
+                nr_losowania = int(nr_text)
+                
+                # Pobierz datę
                 data_str = date_elem.get_text(strip=True)
-
                 current_date_obj = datetime.strptime(data_str, '%d-%m-%Y').date()
+                
+                # Pomiń jeśli to losowanie już mamy
                 if last_date_obj and current_date_obj <= last_date_obj:
                     continue
 
-                liczby = [int(li.get_text(strip=True)) for li in ul.find_all('li', class_='numbers_in_list') if li.get_text(strip=True).isdigit()]
-
+                # Pobierz liczby
+                liczby = []
+                number_lis = ul.find_all('li', class_='numbers_in_list')
+                for li in number_lis:
+                    text = li.get_text(strip=True)
+                    if text.isdigit():
+                        liczby.append(int(text))
+                
+                # Sprawdź czy mamy dokładnie 5 liczb
                 if len(liczby) == 5:
                     new_draws.append({
                         'nr_losowania': nr_losowania,
-                        'data': data_str,
+                        'data': data_str,  # DD-MM-YYYY - konwersja w database.py
                         'liczby': liczby,
                         'rok': current_year
                     })
-            except Exception:
+
+            except Exception as e:
+                # Możesz dodać logging tutaj jeśli chcesz debugować
                 continue
-
+        
         return new_draws
-
-    except Exception:
+    except Exception as e:
+        # Możesz dodać logging tutaj
         return []
-
 
 def scrape_latest_multi_multi(last_date_str: Optional[str] = None) -> List[Dict]:
     """Scrapuje najnowsze losowania Multi Multi."""
@@ -193,9 +209,12 @@ def scrape_latest_multi_multi(last_date_str: Optional[str] = None) -> List[Dict]
                         'wylosowane_numery': ', '.join(numery),
                         'rok': current_year
                     })
+                
             except Exception:
                 continue
-
+        
+        # Logi
+        print(f"Scraper, nowe losowanie: {new_draws}")
         return new_draws
 
     except Exception:

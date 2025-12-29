@@ -67,7 +67,7 @@ def fetch_all_mini_lotto_results() -> list[dict]:
         response = client.table("mini_lotto").select("*").order("data", desc=True).execute()
         return response.data or []
     except Exception as e:
-        print(f"❌ Error fetching Eurojackpot results: {e}")
+        print(f"❌ Error fetching Mini lotto results: {e}")
         raise
 
 # ========================================
@@ -207,8 +207,11 @@ def scrape_and_insert_multi_multi():
         try:
             client.table("multi_multi").insert(row).execute()
             inserted += 1
+            # logi
+            print(f"Dopisano do bazy: {row}")
         except Exception as e:
             if "duplicate key" in str(e).lower():
+                print(f"Niedopisano do bazy: {row}, {e}")
                 continue
             print(f"❌ Błąd wstawiania Multi Multi {draw['nr_losowania']}: {e}")
 
