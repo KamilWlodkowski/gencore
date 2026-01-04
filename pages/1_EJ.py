@@ -1,21 +1,17 @@
 import streamlit as st
-from database import fetch_all_eurojackpot_results
+from components.ej import analysis_tab, generator_tab, checker_tab
 
 st.title("EJ")
 
-draws = fetch_all_eurojackpot_results()
+# Tworzenie zakładek
+tab1, tab2, tab3 = st.tabs(["Analiza", "Generator", "Sprawdzenie"])
 
-if draws:
-    rows_to_show = st.slider(
-    "Liczba wyświetlanych wierszy",
-    min_value=5,
-    max_value=len(draws),
-    value=min(10, len(draws)),  
-    step=5
-)
-    st.write(f"Wyświetlam {rows_to_show} z {len(draws)} losowań")
-    display_data = draws[:rows_to_show]
-    st.dataframe(display_data, use_container_width=True)
+# WAŻNE: NIE używaj st.subheader ani innych elementów poza kontekstem 'with'
+with tab1:
+    analysis_tab.render()
 
-else:
-    st.info("Nie znalezionow danych w tabeli Eurojackpot")
+with tab2:
+    generator_tab.render()
+
+with tab3:
+    checker_tab.render()

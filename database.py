@@ -154,7 +154,6 @@ def scrape_and_insert_mini_lotto():
             'liczba_3': draw['liczby'][2],
             'liczba_4': draw['liczby'][3],
             'liczba_5': draw['liczby'][4],
-            'rok': draw['rok'],
         }
 
         try:
@@ -194,7 +193,6 @@ def scrape_and_insert_multi_multi():
             'nr_losowania': draw['nr_losowania'],
             'data': data_iso,
             'godzina': draw['godzina'] or '',
-            'rok': draw['rok'],
             'numer_1': numery[0], 'numer_2': numery[1], 'numer_3': numery[2],
             'numer_4': numery[3], 'numer_5': numery[4], 'numer_6': numery[5],
             'numer_7': numery[6], 'numer_8': numery[7], 'numer_9': numery[8],
