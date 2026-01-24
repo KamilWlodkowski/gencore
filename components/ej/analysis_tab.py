@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from .table_styles import render_legend, apply_eurojackpot_styles
+from .table_styles import apply_eurojackpot_styles
 from database import fetch_all_eurojackpot_results
 from .charts import create_frequency_chart, create_frequency_line_chart, get_frequency_statistics
 from .statistics import render_frequency_statistics
@@ -11,10 +11,6 @@ def render():
     draws = fetch_all_eurojackpot_results()
 
     if draws:
-        # Wyświetl legendę
-        render_legend()
-        st.divider()
-        
         # Konwersja do DataFrame
         if not isinstance(draws, pd.DataFrame):
             df = pd.DataFrame(draws)
@@ -34,7 +30,6 @@ def render():
         
         # Przygotowanie danych do tabeli
         display_data = df.head(rows_to_show)
-    
         
         # Określ kolumny do kolorowania
         main_number_cols = ['liczba_1', 'liczba_2', 'liczba_3', 'liczba_4', 'liczba_5']  
@@ -42,7 +37,7 @@ def render():
         
         # Zastosuj style
         styled_df = apply_eurojackpot_styles(
-            df, 
+            display_data, 
             main_number_cols=main_number_cols,
             extra_number_cols=extra_number_cols
         )

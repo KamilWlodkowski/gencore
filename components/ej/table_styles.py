@@ -77,6 +77,7 @@ def render_legend():
                 f'text-align: center; font-weight: bold">{range_text}</div>',
                 unsafe_allow_html=True
             )
+            
 def apply_eurojackpot_styles(df, main_number_cols=None, extra_number_cols=None):
     """
     Aplikuje style do DataFrame z wynikami Eurojackpot

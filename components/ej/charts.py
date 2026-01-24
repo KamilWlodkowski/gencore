@@ -29,13 +29,13 @@ def create_frequency_chart(draws_df, number_columns):
     colors = []
     for num in numbers:
         if 1 <= num <= 10:
-            colors.append('#FFE5E5')
+            colors.append('#35E8DF')
         elif 11 <= num <= 20:
-            colors.append('#E5F5FF')
+            colors.append('#F578E2')
         elif 21 <= num <= 30:
-            colors.append('#E5FFE5')
+            colors.append('#F5B538')
         elif 31 <= num <= 40:
-            colors.append('#FFF5E5')
+            colors.append('#80F538')
         elif 41 <= num <= 50:
             colors.append('#FFE5FF')
         else:
@@ -162,5 +162,4 @@ def get_frequency_statistics(draws_df, number_columns):
         'most_common': frequency.most_common(5),
         'least_common': frequency.most_common()[:-6:-1] if len(frequency) >= 5 else [],
         'average': sum(frequency.values()) / len(frequency) if frequency else 0,
-        'unique_count': len(frequency)
     }

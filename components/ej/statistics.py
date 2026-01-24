@@ -22,4 +22,3 @@ def render_frequency_statistics(stats):
     
     with col3:
         st.metric("Średnia częstotliwość", f"{stats['average']:.1f}")
-        st.metric("Unikalne liczby", stats['unique_count'])
