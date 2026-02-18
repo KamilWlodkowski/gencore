@@ -39,45 +39,6 @@ def color_extra_numbers(val):
         return 'background-color: #FFE4B5; color: black; font-weight: bold'
     return ''
 
-def render_legend():
-    """Wyświetla legendę kolorów"""
-    st.markdown("#### 📊 Legenda kolorów:")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("**Liczby główne (1-50):**")
-        legend_main = [
-            ("1-10", "#35E8DF"),
-            ("11-20", "#F578E2"),
-            ("21-30", "#F5B538"),
-            ("31-40", "#80F538"),
-            ("41-50", "#FFE5FF"),
-        ]
-        
-        for range_text, color in legend_main:
-            st.markdown(
-                f'<div style="background-color: {color}; padding: 5px; '
-                f'margin: 2px 0; border-radius: 3px; border: 1px solid #ddd; '
-                f'text-align: center">{range_text}</div>',
-                unsafe_allow_html=True
-            )
-    
-    with col2:
-        st.markdown("**Liczby dodatkowe (1-12):**")
-        legend_extra = [
-            ("1-10", "#35E8DF"),
-            ("11-12", "#FFE4B5"),
-        ]
-        
-        for range_text, color in legend_extra:
-            st.markdown(
-                f'<div style="background-color: {color}; padding: 5px; '
-                f'margin: 2px 0; border-radius: 3px; border: 1px solid #ddd; '
-                f'text-align: center; font-weight: bold">{range_text}</div>',
-                unsafe_allow_html=True
-            )
-            
 def apply_eurojackpot_styles(df, main_number_cols=None, extra_number_cols=None):
     """
     Aplikuje style do DataFrame z wynikami Eurojackpot

@@ -22,3 +22,15 @@ def render_frequency_statistics(stats):
     
     with col3:
         st.metric("Średnia częstotliwość", f"{stats['average']:.1f}")
+
+    st.subheader("Parzystość")
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("**Parzyste**")
+    
+    with col2:
+        st.markdown("**Nieparzyste**")
+
+    with col3:
+        st.markdown("**Inne**")
