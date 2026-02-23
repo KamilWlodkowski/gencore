@@ -90,14 +90,74 @@ def render():
     st.plotly_chart(fig, use_container_width=True)
     
     # =========================================================================
+    # SEKCJA 2B: WYKRES DLA LICZB DODATKOWYCH (GWIAZDEK)
+    # =========================================================================
+    st.divider()
+    st.subheader("⭐ Wykres częstotliwości występowania liczb dodatkowych (gwiazdek)")
+    
+    # Opcje wykresu dla gwiazdek
+    col1, col2 = st.columns([2, 2])
+    
+    with col1:
+        use_all_data_stars = st.checkbox("Użyj wszystkich danych (gwiazdki)", value=True, key="stars_all_data")
+    
+    with col2:
+        chart_type_stars = st.selectbox("Typ wykresu (gwiazdki)", list(CHARTS.keys()), key="stars_chart_type")
+    
+    # Wybierz dane do wykresu gwiazdek
+    if use_all_data_stars:
+        chart_data_stars = df
+        st.info(f"Analiza gwiazdek oparta na wszystkich **{len(df)}** losowaniach")
+    else:
+        chart_data_stars = df.head(rows_to_show)
+        st.info(f"Analiza gwiazdek oparta na **{rows_to_show}** najnowszych losowaniach")
+    
+    # Stwórz i wyświetl wykres dla gwiazdek
+    chart_function_stars = CHARTS[chart_type_stars]
+    fig_stars = chart_function_stars(chart_data_stars, EXTRA_NUMBER_COLS)
+    st.plotly_chart(fig_stars, use_container_width=True)
+    
+    # =========================================================================
     # SEKCJA 3: STATYSTYKI
     # =========================================================================
+    st.divider()
+    st.header("📈 Statystyki")
+    
+    # Nowy suwak do wyboru zakresu danych dla statystyk
+    st.markdown("### 🎚️ Zakres danych dla statystyk")
+    col1, col2 = st.columns([3, 1])
+    
+    with col1:
+        stats_range = st.slider(
+            "Analiza od losowania 1 do:",
+            min_value=10,
+            max_value=len(df),
+            value=len(df),  # Domyślnie wszystkie
+            step=10,
+            help="Określa zakres losowań do analizy. Np. wartość 250 = losowania od 1 do 250"
+        )
+    
+    with col2:
+        st.metric("Zakres", f"1-{stats_range}")
+        st.caption(f"{stats_range} losowań")
+    
+    # Przygotuj dane dla statystyk (od 1 do stats_range)
+    stats_data = df.head(stats_range)
+    
+    st.info(f"📊 Statystyki obliczone na podstawie losowań od **1** do **{stats_range}** (łącznie **{stats_range}** losowań)")
+    
+    st.divider()
     
     # Renderuj wszystkie włączone statystyki
     for stat_key in ENABLED_STATS:
         if stat_key in STATISTICS:
             stat_function = STATISTICS[stat_key]
-            stat_function(chart_data, MAIN_NUMBER_COLS)
+            
+            # Statystyki gwiazdek używają kolumn gwiazdek
+            if stat_key in ['parzystosc_gwiazdki', 'gwiazdki_szostki', 'powtorki_gwiazdki', 'top4_gwiazdki']:
+                stat_function(stats_data, EXTRA_NUMBER_COLS)
+            else:
+                stat_function(stats_data, MAIN_NUMBER_COLS)
 
 
 if __name__ == "__main__":
