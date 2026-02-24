@@ -766,213 +766,117 @@ def stat_parzystosc_gwiazdki(df, columns):
     st.dataframe(detail_df, use_container_width=True, hide_index=True)
 
 
-def stat_korelacje(df, columns):
+def stat_obecnosc_dziesiatek(df, columns):
     """
-    Analiza korelacji - które liczby często występują razem
-    Pokazuje najpopularniejsze pary i trójki liczb
+    Analiza obecności dziesiątek w losowaniach
+    Sprawdza w ilu % losowań występowała przynajmniej jedna liczba z danej dziesiątki
     """
     import pandas as pd
-    from itertools import combinations
-    from collections import Counter
     
-    if len(df) < 10:
-        st.warning("Za mało danych do analizy korelacji (potrzeba minimum 10 losowań)")
-        return
+    def get_decade(num):
+        """Zwraca numer dziesiątki (1-5) dla liczby 1-50"""
+        if 1 <= num <= 10:
+            return 1
+        elif 11 <= num <= 20:
+            return 2
+        elif 21 <= num <= 30:
+            return 3
+        elif 31 <= num <= 40:
+            return 4
+        elif 41 <= num <= 50:
+            return 5
+        return 0
     
-    st.subheader("🔗 Korelacje - liczby występujące razem")
-    st.caption(f"Analiza współwystępowania liczb w {len(df)} losowaniach")
+    st.subheader("📊 Obecność dziesiątek w losowaniach")
+    st.caption("W ilu losowaniach pojawiła się przynajmniej jedna liczba z danej dziesiątki")
     
-    # Zbierz wszystkie pary i trójki
-    pairs = Counter()
-    triplets = Counter()
+    # Zlicz obecność każdej dziesiątki w losowaniach
+    decade_presence = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
     
     for _, row in df.iterrows():
-        numbers = sorted([row[col] for col in columns 
-                         if col in df.columns and pd.notna(row[col])])
+        numbers = [row[col] for col in columns if col in df.columns and pd.notna(row[col])]
         
-        if len(numbers) >= 2:
-            # Wszystkie pary w tym losowaniu
-            for pair in combinations(numbers, 2):
-                pairs[pair] += 1
+        # Sprawdź które dziesiątki są obecne w tym losowaniu
+        decades_in_draw = set()
+        for num in numbers:
+            decade = get_decade(num)
+            if decade in decade_presence:
+                decades_in_draw.add(decade)
         
-        if len(numbers) >= 3:
-            # Wszystkie trójki w tym losowaniu
-            for triplet in combinations(numbers, 3):
-                triplets[triplet] += 1
-    
-    # Top pary i trójki
-    top_pairs = pairs.most_common(20)
-    top_triplets = triplets.most_common(15)
+        # Zlicz obecność
+        for decade in decades_in_draw:
+            decade_presence[decade] += 1
     
     total_draws = len(df)
     
-    # Tabs dla par i trójek
-    tab1, tab2 = st.tabs(["👥 Pary liczb", "👨‍👩‍👦 Trójki liczb"])
+    # Wyświetl metryki w 5 kolumnach
+    st.markdown("### 📈 Statystyki obecności")
+    cols = st.columns(5)
     
-    with tab1:
-        st.markdown("### 🥇 Top 20 par liczb")
-        st.caption("Pary które najczęściej występują razem w jednym losowaniu")
-        
-        if top_pairs:
-            # Podział na 2 kolumny
-            col1, col2 = st.columns(2)
+    colors_map = {
+        1: '#35E8DF',
+        2: '#F578E2',
+        3: '#F5B538',
+        4: '#80F538',
+        5: '#FFE5FF'
+    }
+    
+    for idx, decade in enumerate(range(1, 6)):
+        with cols[idx]:
+            count = decade_presence[decade]
+            percent = (count / total_draws * 100) if total_draws > 0 else 0
             
-            with col1:
-                st.markdown("**Top 1-10**")
-                pair_data_1 = []
-                for idx, (pair, count) in enumerate(top_pairs[:10], 1):
-                    percent = (count / total_draws * 100)
-                    pair_data_1.append({
-                        '#': idx,
-                        'Para': f"{pair[0]}, {pair[1]}",
-                        'Razem': count,
-                        '%': f"{percent:.1f}%"
-                    })
-                
-                df_pairs_1 = pd.DataFrame(pair_data_1)
-                st.dataframe(df_pairs_1, use_container_width=True, hide_index=True)
+            range_label = f"{(decade-1)*10+1}-{decade*10}"
             
-            with col2:
-                st.markdown("**Top 11-20**")
-                pair_data_2 = []
-                for idx, (pair, count) in enumerate(top_pairs[10:20], 11):
-                    percent = (count / total_draws * 100)
-                    pair_data_2.append({
-                        '#': idx,
-                        'Para': f"{pair[0]}, {pair[1]}",
-                        'Razem': count,
-                        '%': f"{percent:.1f}%"
-                    })
-                
-                df_pairs_2 = pd.DataFrame(pair_data_2)
-                st.dataframe(df_pairs_2, use_container_width=True, hide_index=True)
-            
-            # Wykres top 10 par
-            st.markdown("---")
-            st.markdown("### 📊 Wizualizacja top 10 par")
-            
-            top_10_pairs = top_pairs[:10]
-            pair_labels = [f"{p[0]}-{p[1]}" for p, _ in top_10_pairs]
-            pair_counts = [count for _, count in top_10_pairs]
-            
-            fig_pairs = go.Figure(data=[
-                go.Bar(
-                    x=pair_labels,
-                    y=pair_counts,
-                    marker=dict(
-                        color='#3498DB',
-                        line=dict(color='#333333', width=1)
-                    ),
-                    text=pair_counts,
-                    textposition='outside',
-                    hovertemplate='<b>Para:</b> %{x}<br><b>Wystąpienia:</b> %{y}<extra></extra>'
-                )
-            ])
-            
-            max_val = max(pair_counts)
-            y_max = max_val * 1.15
-            
-            fig_pairs.update_layout(
-                title='Top 10 najczęstszych par liczb',
-                xaxis_title='Para liczb',
-                yaxis_title='Liczba wystąpień razem',
-                yaxis=dict(range=[0, y_max]),
-                height=400,
-                showlegend=False,
-                margin=dict(t=60)
+            st.markdown(
+                f"""
+                <div style="background-color: {colors_map[decade]}; 
+                            padding: 10px; 
+                            border-radius: 5px; 
+                            text-align: center;">
+                    <h4 style="margin: 0; color: black;">{range_label}</h4>
+                    <h2 style="margin: 5px 0; color: black;">{count}</h2>
+                    <p style="margin: 0; color: black;">{percent:.1f}%</p>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
-            
-            st.plotly_chart(fig_pairs, use_container_width=True)
-        else:
-            st.info("Brak danych o parach")
     
-    with tab2:
-        st.markdown("### 🥇 Top 15 trójek liczb")
-        st.caption("Trójki które najczęściej występują razem w jednym losowaniu")
-        
-        if top_triplets:
-            triplet_data = []
-            for idx, (triplet, count) in enumerate(top_triplets, 1):
-                percent = (count / total_draws * 100)
-                
-                if idx <= 3:
-                    medal = ['🥇', '🥈', '🥉'][idx-1]
-                else:
-                    medal = ''
-                
-                triplet_data.append({
-                    '#': f"{idx} {medal}",
-                    'Trójka': f"{triplet[0]}, {triplet[1]}, {triplet[2]}",
-                    'Razem': count,
-                    '%': f"{percent:.1f}%"
-                })
-            
-            df_triplets = pd.DataFrame(triplet_data)
-            st.dataframe(df_triplets, use_container_width=True, hide_index=True, height=400)
-            
-            # Wykres top 10 trójek
-            st.markdown("---")
-            st.markdown("### 📊 Wizualizacja top 10 trójek")
-            
-            top_10_triplets = top_triplets[:10]
-            triplet_labels = [f"{t[0]}-{t[1]}-{t[2]}" for t, _ in top_10_triplets]
-            triplet_counts = [count for _, count in top_10_triplets]
-            
-            fig_triplets = go.Figure(data=[
-                go.Bar(
-                    x=triplet_labels,
-                    y=triplet_counts,
-                    marker=dict(
-                        color='#E74C3C',
-                        line=dict(color='#333333', width=1)
-                    ),
-                    text=triplet_counts,
-                    textposition='outside',
-                    hovertemplate='<b>Trójka:</b> %{x}<br><b>Wystąpienia:</b> %{y}<extra></extra>'
-                )
-            ])
-            
-            max_val = max(triplet_counts)
-            y_max = max_val * 1.15
-            
-            fig_triplets.update_layout(
-                title='Top 10 najczęstszych trójek liczb',
-                xaxis_title='Trójka liczb',
-                yaxis_title='Liczba wystąpień razem',
-                yaxis=dict(range=[0, y_max]),
-                height=400,
-                showlegend=False,
-                margin=dict(t=60),
-                xaxis_tickangle=-45
-            )
-            
-            st.plotly_chart(fig_triplets, use_container_width=True)
-        else:
-            st.info("Brak danych o trójkach")
+    st.caption(f"Na podstawie {total_draws} losowań")
     
-    # Sekcja z praktycznymi wskazówkami
+    # Wykres słupkowy
     st.markdown("---")
-    st.markdown("### 💡 Jak to wykorzystać?")
+    st.markdown("### 📊 Wizualizacja")
     
-    if top_pairs:
-        top_pair = top_pairs[0]
-        pair_percent = (top_pair[1] / total_draws * 100)
-        
-        st.info(
-            f"📊 **Najsilniejsza korelacja:** Para {top_pair[0][0]}-{top_pair[0][1]} "
-            f"wystąpiła razem {top_pair[1]} razy ({pair_percent:.1f}% losowań). "
-            f"Jeśli obstawiasz {top_pair[0][0]}, rozważ dodanie {top_pair[0][1]}!"
-        )
+    colors = ['#35E8DF', '#F578E2', '#F5B538', '#80F538', '#FFE5FF']
+    percentages = [(decade_presence[i] / total_draws * 100) if total_draws > 0 else 0 
+                   for i in range(1, 6)]
     
-    if top_triplets:
-        top_triplet = top_triplets[0]
-        triplet_percent = (top_triplet[1] / total_draws * 100)
-        
-        st.success(
-            f"🎯 **Najsilniejsza trójka:** {top_triplet[0][0]}-{top_triplet[0][1]}-{top_triplet[0][2]} "
-            f"wystąpiła razem {top_triplet[1]} razy ({triplet_percent:.1f}% losowań). "
-            f"To silny wzorzec współwystępowania!"
+    fig = go.Figure(data=[
+        go.Bar(
+            x=['1-10', '11-20', '21-30', '31-40', '41-50'],
+            y=percentages,
+            marker=dict(
+                color=colors,
+                line=dict(color='#333333', width=1)
+            ),
+            text=[f"{p:.1f}%" for p in percentages],
+            textposition='outside',
+            hovertemplate='<b>Zakres:</b> %{x}<br><b>Obecność:</b> %{y:.1f}%<extra></extra>'
         )
+    ])
+    
+    fig.update_layout(
+        title='Procent losowań z obecnością liczb z danej dziesiątki',
+        xaxis_title='Zakres liczb',
+        yaxis_title='Procent losowań (%)',
+        yaxis=dict(range=[0, 105]),
+        height=500,
+        showlegend=False,
+        margin=dict(t=80)
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def stat_top10_analiza(df, columns):
@@ -1120,62 +1024,6 @@ def stat_top10_analiza(df, columns):
         )
         
         st.plotly_chart(fig_cold, use_container_width=True)
-    
-    # Tabele szczegółowe
-    st.markdown("---")
-    st.markdown("### 📊 Szczegóły rozkładu")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("**🔥 TOP 10 najczęstszych**")
-        hot_data = []
-        most_common_hot = max(hot_counts, key=hot_counts.get)
-        for i in range(6):
-            count = hot_counts[i]
-            percent = (count / total_analyzed * 100) if total_analyzed > 0 else 0
-            is_most = (i == most_common_hot)
-            
-            hot_data.append({
-                'Trafień': f"{i} {'⭐' if is_most else ''}",
-                'Losowań': count,
-                'Procent': f"{percent:.1f}%"
-            })
-        
-        hot_df = pd.DataFrame(hot_data)
-        st.dataframe(hot_df, use_container_width=True, hide_index=True)
-    
-    with col2:
-        st.markdown("**❄️ TOP 10 najrzadszych**")
-        cold_data = []
-        most_common_cold = max(cold_counts, key=cold_counts.get)
-        for i in range(6):
-            count = cold_counts[i]
-            percent = (count / total_analyzed * 100) if total_analyzed > 0 else 0
-            is_most = (i == most_common_cold)
-            
-            cold_data.append({
-                'Trafień': f"{i} {'⭐' if is_most else ''}",
-                'Losowań': count,
-                'Procent': f"{percent:.1f}%"
-            })
-        
-        cold_df = pd.DataFrame(cold_data)
-        st.dataframe(cold_df, use_container_width=True, hide_index=True)
-    
-    # Wnioski
-    st.markdown("---")
-    st.markdown("### 💡 Wnioski")
-    
-    if avg_hot > avg_cold:
-        ratio = avg_hot / avg_cold if avg_cold > 0 else 0
-        st.info(f"📊 Liczby z TOP 10 najczęstszych pojawiają się **{ratio:.1f}x częściej** niż liczby z TOP 10 najrzadszych")
-    else:
-        st.info("📊 Liczby z TOP 10 najrzadszych pojawiają się podobnie często jak liczby z TOP 10 najczęstszych")
-    
-    # Najczęstsze kombinacje
-    st.caption(f"🔥 Najczęściej: {most_common_hot} liczb z TOP 10 najczęstszych ({hot_counts[most_common_hot]} losowań, {hot_counts[most_common_hot]/total_analyzed*100:.1f}%)")
-    st.caption(f"❄️ Najczęściej: {most_common_cold} liczb z TOP 10 najrzadszych ({cold_counts[most_common_cold]} losowań, {cold_counts[most_common_cold]/total_analyzed*100:.1f}%)")
 
 
 def stat_kombinacje_powtorki(df, columns):
@@ -1280,32 +1128,6 @@ def stat_kombinacje_powtorki(df, columns):
     )
     
     st.plotly_chart(fig, use_container_width=True)
-    
-    # Tabela szczegółowa
-    st.markdown("---")
-    st.markdown("### 📊 Szczegóły")
-    
-    detail_data = []
-    for i in [5, 4, 3, 2, 1, 0]:
-        count = match_counts[i]
-        percent = (count / total_draws * 100) if total_draws > 0 else 0
-        is_most_common = (count == max(match_counts.values()) and count > 0)
-        
-        if i == 5:
-            label = "5/5 (pełna powtórka)"
-        elif i == 0:
-            label = "0/5 (unikalne)"
-        else:
-            label = f"{i}/5 liczb"
-        
-        detail_data.append({
-            'Typ kombinacji': f"{label} {'⭐' if is_most_common else ''}",
-            'Liczba losowań': count,
-            'Procent': f"{percent:.1f}%"
-        })
-    
-    detail_df = pd.DataFrame(detail_data)
-    st.dataframe(detail_df, use_container_width=True, hide_index=True)
     
     # Dodatkowa informacja
     if match_counts[5] > 0:
@@ -1890,7 +1712,7 @@ CHARTS = {
 
 # Słownik statystyk - klucz to identyfikator
 STATISTICS = {
-    'korelacje': stat_korelacje,
+    'obecnosc_dziesiatek': stat_obecnosc_dziesiatek,
     'top10_analiza': stat_top10_analiza,
     'kombinacje_powtorki': stat_kombinacje_powtorki,
     'powtorki': stat_powtorki,
@@ -1906,7 +1728,7 @@ STATISTICS = {
 
 # Lista włączonych statystyk (komentuj/odkomentuj aby włączyć/wyłączyć)
 ENABLED_STATS = [
-    'korelacje',
+    'obecnosc_dziesiatek',
     'top10_analiza',
     'kombinacje_powtorki',
     'powtorki',
